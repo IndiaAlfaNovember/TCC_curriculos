@@ -1,0 +1,4 @@
+* 1d32365 feat:barra superior(falta a imagem)
+* b3b7144 todas as paginas foram criadas
+* 79ef304 feat/setup inicial do projeto
+* 0305274 Initial commit
