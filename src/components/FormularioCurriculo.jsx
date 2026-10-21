@@ -28,8 +28,8 @@ export default function FormularioCurriculo({
   function atualizarCampo(evento) {
     const { name, value } = evento.target;
 
-    setDados((dadosAtuais) => ({
-      ...dadosAtuais,
+    setDados((atuais) => ({
+      ...atuais,
       [name]: value,
     }));
   }
@@ -44,8 +44,9 @@ export default function FormularioCurriculo({
         criarCurriculo(dados);
       }
 
-      alert("Currículo salvo com sucesso!");
+      setDados({ ...dadosVazios });
 
+      alert("Currículo salvo com sucesso!");
       onSalvo?.();
     } catch (erro) {
       alert(erro.message);
@@ -55,13 +56,11 @@ export default function FormularioCurriculo({
   return (
     <form onSubmit={enviarFormulario}>
       <h2>
-        {curriculoInicial
-          ? "Editar Currículo"
-          : "Crie seu Currículo"}
+        {curriculoInicial ? "Editar currículo" : "Criar currículo"}
       </h2>
 
       <div>
-        <label htmlFor="nome">Nome Completo</label>
+        <label htmlFor="nome">Nome completo</label>
         <input
           id="nome"
           name="nome"
@@ -85,9 +84,7 @@ export default function FormularioCurriculo({
       </div>
 
       <div>
-        <label htmlFor="objetivo">
-          Objetivo Profissional
-        </label>
+        <label htmlFor="objetivo">Objetivo profissional</label>
         <textarea
           id="objetivo"
           name="objetivo"
@@ -99,9 +96,7 @@ export default function FormularioCurriculo({
       </div>
 
       <div>
-        <label htmlFor="formacao">
-          Formação Acadêmica
-        </label>
+        <label htmlFor="formacao">Formação acadêmica</label>
         <textarea
           id="formacao"
           name="formacao"
@@ -113,9 +108,7 @@ export default function FormularioCurriculo({
       </div>
 
       <div>
-        <label htmlFor="experiencia">
-          Experiência Profissional
-        </label>
+        <label htmlFor="experiencia">Experiência profissional</label>
         <textarea
           id="experiencia"
           name="experiencia"
@@ -137,9 +130,7 @@ export default function FormularioCurriculo({
       </div>
 
       <button type="submit">
-        {curriculoInicial
-          ? "Salvar alterações"
-          : "Gerar Currículo"}
+        {curriculoInicial ? "Salvar alterações" : "Criar currículo"}
       </button>
     </form>
   );

@@ -2,8 +2,8 @@
 import curriculosIniciais from "@/mocks/curriculos";
 
 const CHAVE = "curriculos";
+const USUARIO_ATUAL_ID = "usuario-atual";
 
-// READ: lista todos os currículos.
 export function listarCurriculos() {
   if (typeof window === "undefined") {
     return [];
@@ -32,26 +32,25 @@ export function listarCurriculos() {
   }
 }
 
-// Salva a lista atualizada no navegador.
 function salvarLista(curriculos) {
   localStorage.setItem(CHAVE, JSON.stringify(curriculos));
 }
 
-// CREATE: cria um novo currículo.
-export function criarCurriculo(dados) {
-  const curriculos = listarCurriculos();
-
-  const novoCurriculo = {
-    ...dados,
-    id: crypto.randomUUID(),
-  };
-
-  salvarLista([...curriculos, novoCurriculo]);
-
-  return novoCurriculo;
+// Lista somente os currículos criados pelo usuário atual.
+export function listarMeusCurriculos() {
+  return listarCurriculos().filter(
+    (curriculo) => curriculo.donoId === USUARIO_ATUAL_ID
+  );
 }
 
-// READ: busca um currículo pelo ID.
+// Lista os currículos públicos de outras pessoas.
+export function listarCurriculosPublicos() {
+  return listarCurriculos().filter(
+    (curriculo) => curriculo.donoId !== USUARIO_ATUAL_ID
+  );
+}
+
+// Busca um currículo pelo ID.
 export function buscarCurriculo(id) {
   return (
     listarCurriculos().find(
@@ -60,21 +59,38 @@ export function buscarCurriculo(id) {
   );
 }
 
-// UPDATE: atualiza um currículo existente.
-export function atualizarCurriculo(id, dados) {
+// Cria um currículo pertencente ao usuário atual.
+export function criarCurriculo(dados) {
   const curriculos = listarCurriculos();
 
-  const existe = curriculos.some(
-    (curriculo) => String(curriculo.id) === String(id)
-  );
+  const novoCurriculo = {
+    ...dados,
+    id: crypto.randomUUID(),
+    donoId: USUARIO_ATUAL_ID,
+  };
 
-  if (!existe) {
-    throw new Error("Currículo não encontrado.");
+  salvarLista([...curriculos, novoCurriculo]);
+
+  return novoCurriculo;
+}
+
+// Verifica se o currículo pertence ao usuário atual.
+function usuarioPodeGerenciar(curriculo) {
+  return curriculo?.donoId === USUARIO_ATUAL_ID;
+}
+
+// Atualiza somente os próprios currículos.
+export function atualizarCurriculo(id, dados) {
+  const curriculos = listarCurriculos();
+  const existente = buscarCurriculo(id);
+
+  if (!usuarioPodeGerenciar(existente)) {
+    throw new Error("Você não pode editar este currículo.");
   }
 
   const curriculosAtualizados = curriculos.map((curriculo) =>
     String(curriculo.id) === String(id)
-      ? { ...curriculo, ...dados, id: curriculo.id }
+      ? { ...curriculo, ...dados, id: curriculo.id, donoId: curriculo.donoId }
       : curriculo
   );
 
@@ -83,19 +99,20 @@ export function atualizarCurriculo(id, dados) {
   return buscarCurriculo(id);
 }
 
-// DELETE: exclui um currículo.
+// Exclui somente os próprios currículos.
 export function excluirCurriculo(id) {
   const curriculos = listarCurriculos();
+  const existente = buscarCurriculo(id);
 
-  const curriculosAtualizados = curriculos.filter(
-    (curriculo) => String(curriculo.id) !== String(id)
-  );
-
-  if (curriculosAtualizados.length === curriculos.length) {
-    return false;
+  if (!usuarioPodeGerenciar(existente)) {
+    throw new Error("Você não pode excluir este currículo.");
   }
 
-  salvarLista(curriculosAtualizados);
+  salvarLista(
+    curriculos.filter(
+      (curriculo) => String(curriculo.id) !== String(id)
+    )
+  );
 
   return true;
 }
