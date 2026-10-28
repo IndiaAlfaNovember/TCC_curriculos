@@ -1,6 +1,8 @@
 
 "use client";
 
+import { useRouter } from "next/navigation";
+import { obterContaAtual } from "@/services/auth";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import FormularioCurriculo from "@/components/FormularioCurriculo";
@@ -12,26 +14,38 @@ import {
 export default function AdicionarCurriculo() {
   const [curriculos, setCurriculos] = useState([]);
 
-  const carregarCurriculos = useCallback(() => {
-    setCurriculos(listarMeusCurriculos());
-  }, []);
-
-  useEffect(() => {
-    carregarCurriculos();
-  }, [carregarCurriculos]);
-
-  function removerCurriculo(id) {
-    if (!window.confirm("Deseja excluir este currículo?")) {
-      return;
-    }
-
-    try {
-      excluirCurriculo(id);
-      carregarCurriculos();
-    } catch (erro) {
-      alert(erro.message);
-    }
+const carregarCurriculos = useCallback(async () => {
+  try {
+    const lista = await listarMeusCurriculos();
+    setCurriculos(lista);
+  } catch (erro) {
+    alert(erro.message);
   }
+}, []);
+
+const router = useRouter();
+
+useEffect(() => {
+  if (!obterContaAtual()) {
+    router.replace("/");
+    return;
+  }
+
+  carregarCurriculos();
+}, [router, carregarCurriculos]);
+
+async function removerCurriculo(id) {
+  if (!window.confirm("Deseja excluir este currículo?")) {
+    return;
+  }
+
+  try {
+    await excluirCurriculo(id);
+    await carregarCurriculos();
+  } catch (erro) {
+    alert(erro.message);
+  }
+}
 
   return (
     <main className="space-y-8">

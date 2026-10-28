@@ -34,24 +34,23 @@ export default function FormularioCurriculo({
     }));
   }
 
-  function enviarFormulario(evento) {
-    evento.preventDefault();
+async function enviarFormulario(evento) {
+  evento.preventDefault();
 
-    try {
-      if (curriculoInicial?.id) {
-        atualizarCurriculo(curriculoInicial.id, dados);
-      } else {
-        criarCurriculo(dados);
-      }
-
-      setDados({ ...dadosVazios });
-
-      alert("Currículo salvo com sucesso!");
-      onSalvo?.();
-    } catch (erro) {
-      alert(erro.message);
+  try {
+    if (curriculoInicial?.id) {
+      await atualizarCurriculo(curriculoInicial.id, dados);
+    } else {
+      await criarCurriculo(dados);
     }
+
+    setDados({ ...dadosVazios });
+    alert("Currículo salvo com sucesso!");
+    onSalvo?.();
+  } catch (erro) {
+    alert(erro.message);
   }
+}
 
   return (
     <form onSubmit={enviarFormulario}>

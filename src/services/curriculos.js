@@ -1,118 +1,128 @@
 
-import curriculosIniciais from "@/mocks/curriculos";
+import { obterContaAtual } from "@/services/auth";
 
-const CHAVE = "curriculos";
-const USUARIO_ATUAL_ID = "usuario-atual";
+async function requisicao(url, opcoes = {}) {
+  const resposta = await fetch(url, {
+    ...opcoes,
+    headers: {
+      "Content-Type": "application/json",
+      ...opcoes.headers,
+    },
+  });
 
+  const resultado = await resposta.json();
+
+  if (!resposta.ok) {
+    throw new Error(
+      resultado.erro || "Ocorreu um erro na operação."
+    );
+  }
+
+  return resultado;
+}
+
+// Lista todos os currículos.
 export function listarCurriculos() {
-  if (typeof window === "undefined") {
+  return requisicao("/api/curriculos");
+}
+
+// Lista os currículos do usuário conectado.
+export async function listarMeusCurriculos() {
+  const conta = obterContaAtual();
+
+  if (!conta) {
     return [];
   }
 
-  const dadosSalvos = localStorage.getItem(CHAVE);
+  const curriculos = await listarCurriculos();
 
-  if (dadosSalvos === null) {
-    localStorage.setItem(
-      CHAVE,
-      JSON.stringify(curriculosIniciais)
-    );
-
-    return curriculosIniciais;
-  }
-
-  try {
-    return JSON.parse(dadosSalvos);
-  } catch {
-    localStorage.setItem(
-      CHAVE,
-      JSON.stringify(curriculosIniciais)
-    );
-
-    return curriculosIniciais;
-  }
-}
-
-function salvarLista(curriculos) {
-  localStorage.setItem(CHAVE, JSON.stringify(curriculos));
-}
-
-// Lista somente os currículos criados pelo usuário atual.
-export function listarMeusCurriculos() {
-  return listarCurriculos().filter(
-    (curriculo) => curriculo.donoId === USUARIO_ATUAL_ID
+  return curriculos.filter(
+    (curriculo) => curriculo.donoId === conta.id
   );
 }
 
-// Lista os currículos públicos de outras pessoas.
-export function listarCurriculosPublicos() {
-  return listarCurriculos().filter(
-    (curriculo) => curriculo.donoId !== USUARIO_ATUAL_ID
+// Lista os currículos públicos de outras contas.
+export async function listarCurriculosPublicos() {
+  const conta = obterContaAtual();
+
+  if (!conta) {
+    return [];
+  }
+
+  const curriculos = await listarCurriculos();
+
+  return curriculos.filter(
+    (curriculo) => curriculo.donoId !== conta.id
   );
 }
 
 // Busca um currículo pelo ID.
-export function buscarCurriculo(id) {
+export async function buscarCurriculo(id) {
+  const curriculos = await listarCurriculos();
+
   return (
-    listarCurriculos().find(
+    curriculos.find(
       (curriculo) => String(curriculo.id) === String(id)
     ) ?? null
   );
 }
 
-// Cria um currículo pertencente ao usuário atual.
-export function criarCurriculo(dados) {
-  const curriculos = listarCurriculos();
+// Cria um currículo.
+export async function criarCurriculo(dados) {
+  const conta = obterContaAtual();
 
-  const novoCurriculo = {
-    ...dados,
-    id: crypto.randomUUID(),
-    donoId: USUARIO_ATUAL_ID,
-  };
+  if (!conta) {
+    throw new Error("Entre na sua conta antes de criar um currículo.");
+  }
 
-  salvarLista([...curriculos, novoCurriculo]);
-
-  return novoCurriculo;
+  return requisicao("/api/curriculos", {
+    method: "POST",
+    body: JSON.stringify({
+      ...dados,
+      donoId: conta.id,
+    }),
+  });
 }
 
-// Verifica se o currículo pertence ao usuário atual.
-function usuarioPodeGerenciar(curriculo) {
-  return curriculo?.donoId === USUARIO_ATUAL_ID;
-}
+// Atualiza um currículo próprio.
+export async function atualizarCurriculo(id, dados) {
+  const conta = obterContaAtual();
 
-// Atualiza somente os próprios currículos.
-export function atualizarCurriculo(id, dados) {
-  const curriculos = listarCurriculos();
-  const existente = buscarCurriculo(id);
+  if (!conta) {
+    throw new Error("Entre na sua conta.");
+  }
 
-  if (!usuarioPodeGerenciar(existente)) {
+  const curriculo = await buscarCurriculo(id);
+
+  if (!curriculo || curriculo.donoId !== conta.id) {
     throw new Error("Você não pode editar este currículo.");
   }
 
-  const curriculosAtualizados = curriculos.map((curriculo) =>
-    String(curriculo.id) === String(id)
-      ? { ...curriculo, ...dados, id: curriculo.id, donoId: curriculo.donoId }
-      : curriculo
+  return requisicao(
+    `/api/curriculos/${encodeURIComponent(id)}`,
+    {
+      method: "PUT",
+      body: JSON.stringify(dados),
+    }
   );
-
-  salvarLista(curriculosAtualizados);
-
-  return buscarCurriculo(id);
 }
 
-// Exclui somente os próprios currículos.
-export function excluirCurriculo(id) {
-  const curriculos = listarCurriculos();
-  const existente = buscarCurriculo(id);
+// Exclui um currículo próprio.
+export async function excluirCurriculo(id) {
+  const conta = obterContaAtual();
 
-  if (!usuarioPodeGerenciar(existente)) {
+  if (!conta) {
+    throw new Error("Entre na sua conta.");
+  }
+
+  const curriculo = await buscarCurriculo(id);
+
+  if (!curriculo || curriculo.donoId !== conta.id) {
     throw new Error("Você não pode excluir este currículo.");
   }
 
-  salvarLista(
-    curriculos.filter(
-      (curriculo) => String(curriculo.id) !== String(id)
-    )
+  return requisicao(
+    `/api/curriculos/${encodeURIComponent(id)}`,
+    { method: "DELETE" }
   );
-
-  return true;
 }

@@ -11,10 +11,18 @@ export default function DetalhesCurriculo() {
   const [curriculo, setCurriculo] = useState(null);
   const [carregado, setCarregado] = useState(false);
 
-  useEffect(() => {
-    setCurriculo(buscarCurriculo(id));
-    setCarregado(true);
-  }, [id]);
+useEffect(() => {
+  async function carregar() {
+    try {
+      const resultado = await buscarCurriculo(id);
+      setCurriculo(resultado);
+    } finally {
+      setCarregado(true);
+    }
+  }
+
+  carregar();
+}, [id]);
 
   if (!carregado) {
     return <p>Carregando currículo...</p>;

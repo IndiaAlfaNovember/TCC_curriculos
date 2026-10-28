@@ -7,9 +7,18 @@ import { listarCurriculosPublicos } from "@/services/curriculos.js";
 export default function VerCurriculos() {
   const [curriculos, setCurriculos] = useState([]);
 
-  useEffect(() => {
-    setCurriculos(listarCurriculosPublicos());
-  }, []);
+useEffect(() => {
+  async function carregar() {
+    try {
+      const lista = await listarCurriculosPublicos();
+      setCurriculos(lista);
+    } catch (erro) {
+      console.error(erro);
+    }
+  }
+
+  carregar();
+}, []);
 
   return (
     <main>
