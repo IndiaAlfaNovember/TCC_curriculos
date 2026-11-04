@@ -14,48 +14,50 @@ import {
 export default function AdicionarCurriculo() {
   const [curriculos, setCurriculos] = useState([]);
 
-const carregarCurriculos = useCallback(async () => {
-  try {
-    const lista = await listarMeusCurriculos();
-    setCurriculos(lista);
-  } catch (erro) {
-    alert(erro.message);
+  const carregarCurriculos = useCallback(async () => {
+    try {
+      const lista = await listarMeusCurriculos();
+      setCurriculos(lista);
+    } catch (erro) {
+      alert(erro.message);
+    }
+  }, []);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!obterContaAtual()) {
+      router.replace("/");
+      return;
+    }
+
+    carregarCurriculos();
+  }, [router, carregarCurriculos]);
+
+  async function removerCurriculo(id) {
+    if (!window.confirm("Deseja excluir este currículo?")) {
+      return;
+    }
+
+    try {
+      await excluirCurriculo(id);
+      await carregarCurriculos();
+    } catch (erro) {
+      alert(erro.message);
+    }
   }
-}, []);
-
-const router = useRouter();
-
-useEffect(() => {
-  if (!obterContaAtual()) {
-    router.replace("/");
-    return;
-  }
-
-  carregarCurriculos();
-}, [router, carregarCurriculos]);
-
-async function removerCurriculo(id) {
-  if (!window.confirm("Deseja excluir este currículo?")) {
-    return;
-  }
-
-  try {
-    await excluirCurriculo(id);
-    await carregarCurriculos();
-  } catch (erro) {
-    alert(erro.message);
-  }
-}
 
   return (
     <main className="space-y-8">
-      <section>
+      <div className="flex justify-evenly">
+      <div>
         <h1>Adicionar currículo</h1>
-
+        <div>
         <FormularioCurriculo onSalvo={carregarCurriculos} />
-      </section>
+      </div>
+      </div>
 
-      <section>
+      <div>
         <h2>Meus currículos</h2>
 
         {curriculos.length === 0 ? (
@@ -77,7 +79,7 @@ async function removerCurriculo(id) {
 
               <button
                 type="button"
-                className="ml-4"
+                className=" mb-4 rounded border p-4-1"
                 onClick={() => removerCurriculo(curriculo.id)}
               >
                 Excluir
@@ -85,7 +87,8 @@ async function removerCurriculo(id) {
             </article>
           ))
         )}
-      </section>
+      </div>
+     </div>
     </main>
   );
 }

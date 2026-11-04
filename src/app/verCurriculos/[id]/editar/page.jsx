@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -13,14 +14,47 @@ export default function EditarCurriculo() {
   const [carregado, setCarregado] = useState(false);
 
   useEffect(() => {
-    const meusCurriculos = listarMeusCurriculos();
+    async function carregarCurriculo() {
+      try {
+        const meusCurriculos = await listarMeusCurriculos();
 
-    setCurriculo(
-      meusCurriculos.find(
-        (item) => String(item.id) === String(id)
-      ) ?? null
-    );
+        const encontrado = meusCurriculos.find(
+          (item) => String(item.id) === String(id)
+        );
 
-    setCarregado(true);
-  }, [id]);
+        if (!encontrado) {
+          router.replace("/adicionar");
+          return;
+        }
+
+        setCurriculo(encontrado);
+      } catch (erro) {
+        console.error("Erro ao carregar currículo:", erro);
+        router.replace("/adicionar");
+      } finally {
+        setCarregado(true);
+      }
+    }
+
+    carregarCurriculo();
+  }, [id, router]);
+
+  if (!carregado) {
+    return <p>Carregando currículo...</p>;
+  }
+
+  if (!curriculo) {
+    return null;
+  }
+
+  return (
+    <main className="max-w-lg mx-auto">
+      <h1>Editar currículo</h1>
+
+      <FormularioCurriculo
+        curriculoInicial={curriculo}
+        onSalvo={() => router.push("/adicionar")}
+      />
+    </main>
+  );
 }

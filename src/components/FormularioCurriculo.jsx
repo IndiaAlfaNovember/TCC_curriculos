@@ -55,10 +55,10 @@ async function enviarFormulario(evento) {
   return (
     <form onSubmit={enviarFormulario}>
       <h2>
-        {curriculoInicial ? "Editar currículo" : "Criar currículo"}
+        {curriculoInicial ? "" : "Criar currículo"}
       </h2>
 
-      <div>
+      <div className=" mb-2 rounded border p-4-1">
         <label htmlFor="nome">Nome completo</label>
         <input
           id="nome"
@@ -70,7 +70,7 @@ async function enviarFormulario(evento) {
         />
       </div>
 
-      <div>
+      <div className=" mb-2 rounded border p-4-1">
         <label htmlFor="contato">Contato</label>
         <input
           id="contato"
@@ -82,7 +82,7 @@ async function enviarFormulario(evento) {
         />
       </div>
 
-      <div>
+      <div className=" mb-2 rounded border p-4-1">
         <label htmlFor="objetivo">Objetivo profissional</label>
         <textarea
           id="objetivo"
@@ -94,7 +94,7 @@ async function enviarFormulario(evento) {
         />
       </div>
 
-      <div>
+      <div className=" mb-2 rounded border p-4-1">
         <label htmlFor="formacao">Formação acadêmica</label>
         <textarea
           id="formacao"
@@ -106,7 +106,7 @@ async function enviarFormulario(evento) {
         />
       </div>
 
-      <div>
+      <div className=" mb-2 rounded border p-4-1">
         <label htmlFor="experiencia">Experiência profissional</label>
         <textarea
           id="experiencia"
@@ -117,7 +117,7 @@ async function enviarFormulario(evento) {
         />
       </div>
 
-      <div>
+      <div className=" mb-2 rounded border p-4-1">
         <label htmlFor="habilidades">Habilidades</label>
         <textarea
           id="habilidades"
@@ -128,7 +128,7 @@ async function enviarFormulario(evento) {
         />
       </div>
 
-      <button type="submit">
+      <button type="submit"  className=" mb-4 rounded border p-4-1 bg-blue-400">
         {curriculoInicial ? "Salvar alterações" : "Criar currículo"}
       </button>
     </form>
