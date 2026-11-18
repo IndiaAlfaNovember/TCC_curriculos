@@ -1,35 +1,18 @@
 
 import { NextResponse } from "next/server";
-import { readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { randomUUID } from "node:crypto";
+import {
+  lerCurriculos,
+  salvarCurriculos,
+} from "@/lib/curriculosBlob";
 
 export const runtime = "nodejs";
 
-const ARQUIVO = path.join(
-  process.cwd(),
-  "src",
-  "data",
-  "curriculos.json"
-);
-
-async function lerCurriculos() {
-  const conteudo = await readFile(ARQUIVO, "utf8");
-  return JSON.parse(conteudo);
-}
-
-async function salvarCurriculos(curriculos) {
-  await writeFile(
-    ARQUIVO,
-    JSON.stringify(curriculos, null, 2),
-    "utf8"
-  );
-}
-
-// GET: listar currículos.
+// GET: listar currículos
 export async function GET() {
   try {
     const curriculos = await lerCurriculos();
+
     return NextResponse.json(curriculos);
   } catch (erro) {
     console.error("Erro ao ler currículos:", erro);
@@ -41,7 +24,7 @@ export async function GET() {
   }
 }
 
-// POST: criar currículo.
+// POST: criar currículo
 export async function POST(request) {
   try {
     const dados = await request.json();
